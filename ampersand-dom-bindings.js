@@ -64,7 +64,7 @@ function getSelector(binding) {
     }
 }
 
-function getBindingFunc(binding, context) {
+function getBindingFunc(binding, key, context) {
     var type = binding.type || 'text';
     var isCustomBinding = typeof type === 'function';
     var selector = getSelector(binding);
@@ -108,6 +108,23 @@ function getBindingFunc(binding, context) {
             previousValue = value;
         };
     } else if (type === 'value') {
+        return function (el, value) {
+            getMatches(el, selector, firstMatchOnly).forEach(function (match) {
+                if (!value && value !== 0) value = '';
+                // only apply bindings if element is not currently focused
+                if (document.activeElement !== match) match.value = value;
+            });
+            previousValue = value;
+        };
+    } else if (type === 'valueTwoWay') {
+    	context.on('render', function() { // todo handle rerender
+    		var valueChangeEvent = function (e) {
+    			context[key] = e.target.value;
+			}
+    		getMatches(el, selector, firstMatchOnly).forEach(function (match) {
+    			match.addEventListener('blur', valueChangeEvent); //todo context.delegateEvents
+			}
+		});
         return function (el, value) {
             getMatches(el, selector, firstMatchOnly).forEach(function (match) {
                 if (!value && value !== 0) value = '';
@@ -260,13 +277,13 @@ module.exports = function (bindings, context) {
             store.add(key, getBindingFunc({
                 type: 'text',
                 selector: current
-            }));
+            }, key, context));
         } else if (current.forEach) {
             current.forEach(function (binding) {
-                store.add(key, getBindingFunc(binding, context));
+                store.add(key, getBindingFunc(binding, key, context));
             });
         } else {
-            store.add(key, getBindingFunc(current, context));
+            store.add(key, getBindingFunc(current, key, context));
         }
     }
 

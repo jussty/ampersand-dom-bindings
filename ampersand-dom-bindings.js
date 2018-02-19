@@ -107,6 +107,62 @@ function getBindingFunc(binding, key, context) {
             });
             previousValue = value;
         };
+    } else if (type === 'attributeTwoWay') {
+        if (!binding.name) throw Error('attribute bindings must have a "name"');
+        context.on('render', function() { // todo handle rerender
+            var model = context;
+            var modelKey = key;
+            if (key.indexOf('.') > -1) {
+                var subkeys = key.split('.');
+                for (var i = 0; i < subkeys.length - 1; i++) {
+                    model = model[subkeys[i]];
+                    modelKey = subkeys[i + 1];
+                }
+            }
+            //console.log('attributeTwoWay render', context, model, modelKey, model[modelKey]);
+            var valueChangeEvent = function (e) {
+                model[modelKey] = e.target.getAttribute(binding.name); // todo binding.name can be array
+            }
+            getMatches(context.el, selector, firstMatchOnly).forEach(function (match) {
+                match.addEventListener('change', valueChangeEvent); //todo context.delegateEvents
+            });
+        });
+
+        return function (el, value) {
+            var names = makeArray(binding.name);
+            getMatches(el, selector, firstMatchOnly).forEach(function (match) {
+                names.forEach(function (name) {
+                    dom.setAttribute(match, name, value);
+                });
+            });
+            previousValue = value;
+        };
+    } else if (type === 'checkboxTwoWay') {
+        context.on('render', function() { // todo handle rerender
+            var model = context;
+            var modelKey = key;
+            if (key.indexOf('.') > -1) {
+                var subkeys = key.split('.');
+                for (var i = 0; i < subkeys.length - 1; i++) {
+                    model = model[subkeys[i]];
+                    modelKey = subkeys[i + 1];
+                }
+            }
+            //console.log('checkboxTwoWay render', context, model, modelKey, model[modelKey]);
+            var valueChangeEvent = function (e) {
+                model[modelKey] = e.target.checked;
+            }
+            getMatches(context.el, selector, firstMatchOnly).forEach(function (match) {
+                match.addEventListener('change', valueChangeEvent); //todo context.delegateEvents
+            });
+        });
+        return function (el, value) {
+            getMatches(el, selector, firstMatchOnly).forEach(function (match) {
+                value = !!value;
+                match.checked = value;
+            });
+            previousValue = value;
+        };
     } else if (type === 'value') {
         return function (el, value) {
             getMatches(el, selector, firstMatchOnly).forEach(function (match) {
@@ -118,12 +174,22 @@ function getBindingFunc(binding, key, context) {
         };
     } else if (type === 'valueTwoWay') {
     	context.on('render', function() { // todo handle rerender
+            var model = context;
+            var modelKey = key;
+            if (key.indexOf('.') > -1) {
+                var subkeys = key.split('.');
+                for (var i = 0; i < subkeys.length - 1; i++) {
+                    model = model[subkeys[i]];
+                    modelKey = subkeys[i + 1];
+                }
+            }
+            //console.log('valueTwoWay render', context, model, modelKey, model[modelKey]);
     		var valueChangeEvent = function (e) {
-    			context[key] = e.target.value;
+    			model[modelKey] = e.target.value;
 			}
-    		getMatches(el, selector, firstMatchOnly).forEach(function (match) {
-    			match.addEventListener('blur', valueChangeEvent); //todo context.delegateEvents
-			}
+    		getMatches(context.el, selector, firstMatchOnly).forEach(function (match) {
+    			match.addEventListener('change', valueChangeEvent); //todo context.delegateEvents
+			});
 		});
         return function (el, value) {
             getMatches(el, selector, firstMatchOnly).forEach(function (match) {

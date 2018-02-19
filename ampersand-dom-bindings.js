@@ -122,7 +122,7 @@ function getBindingFunc(binding, key, context) {
             //console.log('attributeTwoWay render', context, model, modelKey, model[modelKey]);
             var valueChangeEvent = function (e) {
                 model[modelKey] = e.target.getAttribute(binding.name); // todo binding.name can be array
-            }
+            };
             getMatches(context.el, selector, firstMatchOnly).forEach(function (match) {
                 match.addEventListener('change', valueChangeEvent); //todo context.delegateEvents
             });
@@ -151,7 +151,7 @@ function getBindingFunc(binding, key, context) {
             //console.log('checkboxTwoWay render', context, model, modelKey, model[modelKey]);
             var valueChangeEvent = function (e) {
                 model[modelKey] = e.target.checked;
-            }
+            };
             getMatches(context.el, selector, firstMatchOnly).forEach(function (match) {
                 match.addEventListener('change', valueChangeEvent); //todo context.delegateEvents
             });
@@ -186,7 +186,7 @@ function getBindingFunc(binding, key, context) {
             //console.log('valueTwoWay render', context, model, modelKey, model[modelKey]);
     		var valueChangeEvent = function (e) {
     			model[modelKey] = e.target.value;
-			}
+			};
     		getMatches(context.el, selector, firstMatchOnly).forEach(function (match) {
     			match.addEventListener('change', valueChangeEvent); //todo context.delegateEvents
 			});
